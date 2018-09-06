@@ -1,5 +1,8 @@
 package com.github.fabiojose.ownership.state;
 
+import com.github.fabiojose.ownership.schema.OwnershipSchemaV1;
+
+import com.google.common.collect.ImmutableList;
 import net.corda.core.contracts.LinearState;
 import net.corda.core.schemas.MappedSchema;
 import net.corda.core.schemas.QueryableState;
@@ -71,11 +74,22 @@ public class OwnershipState implements LinearState, QueryableState {
 
   @Override
   public PersistentState generateMappedObject(MappedSchema schema){
-    return null;
+    if(schema instanceof OwnershipSchemaV1){
+      return new OwnershipSchemaV1
+                  .PersistentOwnership(object,
+                                       description,
+                                       value,
+                                       currency,
+                                       owner.getName().toString(),
+                                       buyer.getName().toString(),
+                                       linearId.getId());
+    } else {
+      throw new IllegalArgumentException(String.format("Unrecognized schema: %s", schema));
+    }
   }
 
   @Override
   public Iterable<MappedSchema> supportedSchemas(){
-    return null;
+    return ImmutableList.of(new OwnershipSchemaV1());
   }
 }
