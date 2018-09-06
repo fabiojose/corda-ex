@@ -14,6 +14,11 @@ import net.corda.core.contracts.UniqueIdentifier;
 import java.util.Arrays;
 import java.util.List;
 
+/*
+ * The ownership state class definition.
+ * Implements LinearState that guarantee only one current version of ownership
+ * Implements QueryableState to allow queries on the node's database
+ */
 public class OwnershipState implements LinearState, QueryableState {
 
   private final String object;
