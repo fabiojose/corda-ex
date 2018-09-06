@@ -97,4 +97,8 @@ public class OwnershipState implements LinearState, QueryableState {
   public Iterable<MappedSchema> supportedSchemas(){
     return ImmutableList.of(new OwnershipSchemaV1());
   }
+
+  public String toString(){
+    return String.format("Ownership(object=%s, value=%s, currency=%s, owner=%s)", object, value, currency, owner);
+  }
 }
