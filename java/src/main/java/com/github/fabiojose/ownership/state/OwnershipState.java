@@ -66,7 +66,7 @@ public class OwnershipState implements LinearState, QueryableState {
 
   @Override
   public List<AbstractParty> getParticipants(){
-    return Arrays.asList(owner);
+    return Arrays.asList(owner, buyer);
   }
 
   @Override
