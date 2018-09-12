@@ -57,3 +57,7 @@ dependencies {
   cordapp "$corda_release_group:corda-finance:$corda_release_version"
 }
 
+tasks.withType(JavaCompile) {
+  options.compilerArgs << "-parameters" // Required for shell commands.
+}
+
