@@ -14,6 +14,8 @@ import static net.corda.core.contracts.ContractsDSL.requireThat;
 import java.util.stream.Collectors;
 import java.util.List;
 
+import org.slf4j.LoggerFactory;
+
 public class OwnershipContract implements Contract {
   public static final String OWNERSHIP_CONTRACT_ID = "com.github.fabiojose.ownership.contract.OwnershipContract";
 
@@ -37,8 +39,13 @@ public class OwnershipContract implements Contract {
 
         // Get participants of transaction
         List<?> participants = out.getParticipants().stream().map(AbstractParty::getOwningKey).collect(Collectors.toList());
+        
+        // Produce log entries
+        LoggerFactory.getLogger(OwnershipContract.class).info(participants.toString());
+        LoggerFactory.getLogger(OwnershipContract.class).info(command.getSigners().toString());
+
         require.using("All parties must be signers",
-                     command.getSigners().contains(participants));
+                     command.getSigners().containsAll(participants));
 
         return null;
       });
