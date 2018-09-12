@@ -46,14 +46,12 @@ public final class IssueFlow {
     private final String description;
     private final Double value;
     private final String currency;
-    private final Party owner;
 
-    public Initiator(final String object, final String description, final Double value, final String currency, final Party owner){
+    public Initiator(final String object, final String description, final Double value, final String currency){
       this.object = object;
       this.description = description;
       this.value = value;
       this.currency = currency;
-      this.owner = owner;
     }
 
     @Override
