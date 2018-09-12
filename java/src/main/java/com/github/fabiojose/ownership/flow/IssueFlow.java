@@ -69,8 +69,14 @@ public final class IssueFlow extends FlowLogic<SignedTransaction>{
       // Get the reference to my identity
       final Party me = getServiceHub().getMyInfo().getLegalIdentities().get(0);
 
+      // Generate the state linear ID
+      final UniqueIdentifier lid = new UniqueIdentifier();
+
+      // Produce log entries
+      getLogger().info(" >  >  >  >  ownership ID: " + lid.getId());
+
       // Instance the state
-      final OwnershipState state = new OwnershipState(object, description, value, currency, me, new UniqueIdentifier());
+      final OwnershipState state = new OwnershipState(object, description, value, currency, me, lid);
 
       // Instance the command used in the transaction
       final Command<OwnershipContract.Commands.Issue> issue = new Command<>(new OwnershipContract.Commands.Issue(), ImmutableList.of(me.getOwningKey()));
