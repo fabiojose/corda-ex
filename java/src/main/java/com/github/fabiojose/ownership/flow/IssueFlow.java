@@ -23,12 +23,9 @@ import net.corda.core.utilities.ProgressTracker.Step;
 import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.contracts.Command;
 
-
-public final class IssueFlow {
-
-  @InitiatingFlow
-  @StartableByRPC
-  public static class Initiator extends FlowLogic<SignedTransaction> {
+@InitiatingFlow
+@StartableByRPC
+public final class IssueFlow extends FlowLogic<SignedTransaction>{
 
     private final Step GENERATING_TRANSACTION = new Step("Generating transaction on new ownership");
     private final Step VERIFYING_TRANSACTION  = new Step("Verifying contract constraints");
@@ -47,7 +44,7 @@ public final class IssueFlow {
     private final Double value;
     private final String currency;
 
-    public Initiator(final String object, final String description, final Double value, final String currency){
+    public IssueFlow(final String object, final String description, final Double value, final String currency){
       this.object = object;
       this.description = description;
       this.value = value;
@@ -97,5 +94,4 @@ public final class IssueFlow {
       tracker.setCurrentStep(FINALIZING_TRANSACTION);
       return subFlow(new FinalityFlow(partSignedTx));
     }
-  }
 }
