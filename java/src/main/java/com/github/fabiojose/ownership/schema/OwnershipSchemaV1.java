@@ -50,21 +50,16 @@ public class OwnershipSchemaV1 extends MappedSchema {
     @Column(name = "owner")
     private final String owner;
 
-    // the buyer of ownership
-    @Column(name = "buyer")
-    private final String buyer;
-
     // field to save the linear id for LinearState
     @Column(name = "linear_id")
     private final UUID linearId;
 
-    public PersistentOwnership(String object, String description, Double value, String currency, String owner, String buyer, UUID linearId){
+    public PersistentOwnership(String object, String description, Double value, String currency, String owner, UUID linearId){
       this.object = object;
       this.description = description;
       this.value = value;
       this.currency = currency;
       this.owner = owner;
-      this.buyer = buyer;
       this.linearId = linearId;
     }
 
@@ -86,10 +81,6 @@ public class OwnershipSchemaV1 extends MappedSchema {
 
     public String getOwner() {
       return owner;
-    }
-
-    public String getBuyer(){
-      return buyer;
     }
 
     public UUID getLinearId(){

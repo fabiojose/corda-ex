@@ -22,6 +22,7 @@ import net.corda.core.utilities.ProgressTracker.Step;
 
 import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.contracts.Command;
+import net.corda.core.contracts.StateAndRef;
 
 import net.corda.core.node.services.Vault;
 import net.corda.core.node.services.vault.QueryCriteria;
@@ -33,12 +34,14 @@ import java.util.UUID;
 public final class TransferFlow extends FlowLogic<SignedTransaction>{
 
     private final Step GENERATING_TRANSACTION = new Step("Generating transaction to perform the transfer to new owner");
+    private final Step BANKING_TRANSACTION    = new Step("Checking the paid value in the bank");
     private final Step VERIFYING_TRANSACTION  = new Step("Verifying contract constraints");
     private final Step SIGNING_TRANSACTION    = new Step("Signing transaction with our private key");
     private final Step FINALIZING_TRANSACTION = new Step("Finalizing proposed transaction");
 
     private final ProgressTracker tracker = new ProgressTracker(
       GENERATING_TRANSACTION,
+      BANKING_TRANSACTION,
       VERIFYING_TRANSACTION,
       SIGNING_TRANSACTION,
       FINALIZING_TRANSACTION    
@@ -69,42 +72,56 @@ public final class TransferFlow extends FlowLogic<SignedTransaction>{
       // 1.
       tracker.setCurrentStep(GENERATING_TRANSACTION);
       
-      // Get the reference to my identity
+      // Gets the reference to my identity
       final Party me = getServiceHub().getMyInfo().getLegalIdentities().get(0);
 
-      // Get the reference to current state, where I am the owner
-      //final QueryCriteria generalCriteria = new VaultQueryCriteria(Vault.StateStatus.ALL);
+      // Gets the reference to current state, where I am the owner
       final QueryCriteria criteria = new QueryCriteria.LinearStateQueryCriteria(ImmutableList.of(me), ImmutableList.of(UUID.fromString(ownershipID)));
       final Vault.Page<OwnershipState> results = getServiceHub().getVaultService().queryBy(OwnershipState.class, criteria);
 
       getLogger().info(" >>>>>>>>>>>>> " + results.toString());
+      getLogger().info(" >>>>>>>>>>>>> " + results.getStates().size());
 
-      // Instance the state
-      //final OwnershipState state = new OwnershipState(object, description, value, currency, me, new UniqueIdentifier());
+      // Gets the data of state, that is OwnershipState
+      final StateAndRef<OwnershipState> oldState = results.getStates().get(0);
+      final OwnershipState current               = oldState.getState().getData();
+      getLogger().info(" >>>>>>>>>>>>> " + oldState);
+
+      // New id for new ownership
+      final UniqueIdentifier lid = new UniqueIdentifier();
+
+      // Instance the state with new owner
+      final OwnershipState newState = new OwnershipState(current.getObject(),
+        current.getDescription(), 
+        current.getValue(), 
+        current.getCurrency(), 
+        newOwner,
+        lid);
 
       // Instance the command used in the transaction
-      //final Command<OwnershipContract.Commands.Issue> issue = new Command<>(new OwnershipContract.Commands.Issue(), ImmutableList.of(me.getOwningKey()));
+      final Command<OwnershipContract.Commands.Transfer> transfer = new Command<>(new OwnershipContract.Commands.Transfer(), ImmutableList.of(me.getOwningKey()));
 
       // Create a transaction builder instance to issue the ownership for me
-      /*
       final TransactionBuilder txBuilder = new TransactionBuilder(notary)
-                                                 .addOutputState(state, OwnershipContract.OWNERSHIP_CONTRACT_ID)
-                                                 .addCommand(issue);
+        .addInputState(oldState)
+        .addOutputState(newState, OwnershipContract.OWNERSHIP_CONTRACT_ID)
+        .addCommand(transfer);
       
-      // 2.
+      // 2. - Communicate with bank node to check the withdraw 
+      tracker.setCurrentStep(BANKING_TRANSACTION);
+
+      // 3.
       tracker.setCurrentStep(VERIFYING_TRANSACTION);
 
       // Execute the contract's logic
       txBuilder.verify(getServiceHub());
     
-      // 3.
+      // 4.
       tracker.setCurrentStep(SIGNING_TRANSACTION);
       final SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(txBuilder);
 
-      // 4.
+      // 5.
       tracker.setCurrentStep(FINALIZING_TRANSACTION);
       return subFlow(new FinalityFlow(partSignedTx));
-      */
-      return null;
     }
 }

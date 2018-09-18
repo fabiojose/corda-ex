@@ -29,17 +29,14 @@ public class OwnershipState implements LinearState, QueryableState {
 
   private final Party owner;
 
-  private final Party buyer;
-
   private final UniqueIdentifier linearId;
 
-  public OwnershipState(String object, String description, Double value, String currency, Party owner, Party buyer, UniqueIdentifier linearId){
+  public OwnershipState(String object, String description, Double value, String currency, Party owner, UniqueIdentifier linearId){
     this.object = object;
     this.description = description;
     this.value = value;
     this.currency = currency;
     this.owner = owner;
-    this.buyer = buyer;
     this.linearId = linearId;
   } 
 
@@ -63,10 +60,6 @@ public class OwnershipState implements LinearState, QueryableState {
     return owner;
   }
 
-  public Party getBuyer(){
-    return buyer;
-  }
-
   @Override
   public UniqueIdentifier getLinearId(){
     return linearId;
@@ -74,7 +67,7 @@ public class OwnershipState implements LinearState, QueryableState {
 
   @Override
   public List<AbstractParty> getParticipants(){
-    return Arrays.asList(owner, buyer);
+    return Arrays.asList(owner);
   }
 
   @Override
@@ -86,7 +79,6 @@ public class OwnershipState implements LinearState, QueryableState {
                                        value,
                                        currency,
                                        owner.getName().toString(),
-                                       buyer.getName().toString(),
                                        linearId.getId());
     } else {
       throw new IllegalArgumentException(String.format("Unrecognized schema: %s", schema));

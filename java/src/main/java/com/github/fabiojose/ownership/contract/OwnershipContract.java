@@ -25,8 +25,10 @@ public class OwnershipContract implements Contract {
   public void verify(LedgerTransaction tx) {
     final CommandWithParties<Commands> command = requireSingleCommand(tx.getCommands(), Commands.class);
 
+    LoggerFactory.getLogger(OwnershipContract.class).info(" > > > > CMD" + command);
+
+    // Issing (emiting) the ownership record
     if(command.getValue() instanceof Commands.Issue){
-      // Emiting the ownership record
       requireThat(require -> {
         require.using("No inputs should be consumed when emitting the ownership", tx.getInputs().isEmpty());
         require.using("Only one output should be produced", tx.getOutputs().size() == 1);
@@ -34,7 +36,7 @@ public class OwnershipContract implements Contract {
         // Gets the Output state instance from transaction
         final OwnershipState out = tx.outputsOfType(OwnershipState.class).get(FIRST);
 
-        // Non zero ownership valure
+        // Non zero ownership value
         require.using("The value of ownershitp should be greater than zero", out.getValue() > 0.0d);
 
         // Get participants of transaction
@@ -45,12 +47,35 @@ public class OwnershipContract implements Contract {
         LoggerFactory.getLogger(OwnershipContract.class).info(command.getSigners().toString());
 
         require.using("All parties must be signers",
-                     command.getSigners().containsAll(participants));
+                      command.getSigners().containsAll(participants));
 
         return null;
       });
-    } else if(command.getValue() instanceof Commands.Transfer){
 
+      // Transfering (selling) the ownership to another party
+    } else if(command.getValue() instanceof Commands.Transfer){
+      requireThat(require -> {
+
+        LoggerFactory.getLogger(OwnershipContract.class).info(" > > > > INPUT " + tx.getInputs());
+        LoggerFactory.getLogger(OwnershipContract.class).info(" > > > > OUTPUT" + tx.getOutputs());
+
+        // The input with current owner
+        require.using("Exactly one input should be provided", tx.getInputs().size() == 1);
+
+        // The output with new onwer
+        require.using("Only one output should be produced", tx.getOutputs().size() == 1);
+
+        // Gets the Input state with current owner
+        final OwnershipState in = tx.inputsOfType(OwnershipState.class).get(FIRST);
+
+        // Gets the Output state with new owner
+        final OwnershipState out = tx.outputsOfType(OwnershipState.class).get(FIRST);
+
+        // Buyer and Seller should not be the same
+        require.using("The new owner and old one should not be the same", !in.getOwner().equals(out.getOwner()));
+
+        return null;
+      });
     } else {
       throw new IllegalArgumentException("Unknow command: " + command.getValue());
     }
